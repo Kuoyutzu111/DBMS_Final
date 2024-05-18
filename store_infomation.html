@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>店家介紹頁面 - 基本資料</title>
+    <style>
+        body {
+            background-color: #FFFDD0; /* Light yellow background */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            padding: 20px;
+            background-color: #fb0505;
+            text-align: center;
+        }
+
+        .website-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .menu {
+            display: inline-block;
+            margin-left: 20px;
+        }
+
+        .menu a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .search {
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .search input[type="text"] {
+            padding: 5px;
+            margin-right: 5px;
+        }
+
+        .search button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .container {
+            display: flex;
+            padding: 20px;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 0;
+            color: black;
+            text-decoration: none;
+        }
+
+        .sidebar a.active {
+            background-color: #ddd;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .content h2 {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label {
+            width: 100px;
+            margin-right: 10px;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            flex: 1;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .actions button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+
+        .actions button.clear {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <?php
+    // Establish a database connection
+    $servername = "localhost";
+    $username = "username";
+    $password = "password";
+    $dbname = "reservation_db";
+
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    // Handle form submission
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save'])) {
+        $address = $_POST['address'];
+        $hours = $_POST['hours'];
+        $average_cost = $_POST['average_cost'];
+        $phone = $_POST['phone'];
+
+        $sql = "INSERT INTO store_info (address, hours, average_cost, phone) VALUES ('$address', '$hours', '$average_cost', '$phone')";
+
+        if ($conn->query($sql) === TRUE) {
+            echo "Information saved successfully";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
+    }
+
+    $conn->close();
+    ?>
+
+    <div class="navbar">
+        <div class="website-title">網站名稱</div>
+        <div class="menu">
+            <a href="loginpage.html">登入</a>
+            <a href="user_information.html">個人資料</a>
+            <a href="#">會員專區</a>
+        </div>
+        <div class="search">
+            <input type="text" placeholder="請輸入關鍵字">
+            <button>Q</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <h3>店名</h3>
+            <a href="store_information.html" class="active">基本資料</a>
+            <a href="store_meau.html">菜單</a>
+            <a href="store_photo.html">照片</a>
+            <a href="store_reservation.html">預約</a>
+            <a href="store_website.html">網絡</a>
+        </div>
+        <div class="content">
+            <h2>基本資料</h2>
+            <form action="store_information.php" method="post">
+                <div class="form-group">
+                    <label for="address">地址</label>
+                    <input type="text" id="address" name="address">
+                </div>
+                <div class="form-group">
+                    <label for="hours">營業時間</label>
+                    <select id="hours" name="hours">
+                        <option value="MON">MON 11:00-19:00</option>
+                        <option value="TUE">TUE 11:00-19:00</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="average-cost">平均消費</label>
+                    <input type="text" id="average-cost" name="average_cost">
+                </div>
+                <div class="form-group">
+                    <label for="phone">電話</label>
+                    <input type="text" id="phone" name="phone">
+                </div>
+                <div class="actions">
+                    <button type="button" class="clear" onclick="clearForm()">全部清除</button>
+                    <button type="submit" name="save" class="save">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function clearForm() {
+            document.getElementById('address').value = '';
+            document.getElementById('hours').value = '';
+            document.getElementById('average-cost').value = '';
+            document.getElementById('phone').value = '';
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>店家介紹頁面 - 照片</title>
+    <style>
+        body {
+            background-color: #FFFDD0; /* Light yellow background */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            padding: 20px;
+            background-color: #fb0505;
+            text-align: center;
+        }
+
+        .website-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .menu {
+            display: inline-block;
+            margin-left: 20px;
+        }
+
+        .menu a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .search {
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .search input[type="text"] {
+            padding: 5px;
+            margin-right: 5px;
+        }
+
+        .search button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .container {
+            display: flex;
+            padding: 20px;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 0;
+            color: black;
+            text-decoration: none;
+        }
+
+        .sidebar a.active {
+            background-color: #ddd;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .content h2 {
+            margin-top: 0;
+        }
+
+        .store-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .store-info div {
+            margin-right: 10px;
+        }
+
+        .store-info div:last-child {
+            margin-right: 0;
+        }
+
+        .photo-sections {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .photo-section {
+            width: 30%;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .photo-section p {
+            margin: 10px 0;
+        }
+
+        .photo-section img {
+            width: 100%;
+            height: auto;
+        }
+
+        .photo-preview {
+            width: 30%;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 200px; /* Adjust the max-height as needed */
+            height: auto;
+        }
+
+    </style>
+</head>
+<body>
+    <?php
+    // Establish a database connection
+    $servername = "localhost";
+    $username = "username";
+    $password = "password";
+    $dbname = "reservation_db";
+
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    // Handle file upload
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['photo'])) {
+        $target_dir = "uploads/";
+        $target_file = $target_dir . basename($_FILES["photo"]["name"]);
+        $uploadOk = 1;
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+        // Check if image file is a actual image or fake image
+        $check = getimagesize($_FILES["photo"]["tmp_name"]);
+        if ($check !== false) {
+            $uploadOk = 1;
+        } else {
+            echo "File is not an image.";
+            $uploadOk = 0;
+        }
+
+        // Check if file already exists
+        if (file_exists($target_file)) {
+            echo "Sorry, file already exists.";
+            $uploadOk = 0;
+        }
+
+        // Check file size
+        if ($_FILES["photo"]["size"] > 500000) {
+            echo "Sorry, your file is too large.";
+            $uploadOk = 0;
+        }
+
+        // Allow certain file formats
+        if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+        && $imageFileType != "gif") {
+            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+            $uploadOk = 0;
+        }
+
+        // Check if $uploadOk is set to 0 by an error
+        if ($uploadOk == 0) {
+            echo "Sorry, your file was not uploaded.";
+        // if everything is ok, try to upload file
+        } else {
+            if (move_uploaded_file($_FILES["photo"]["tmp_name"], $target_file)) {
+                $sql = "INSERT INTO photos (file_path) VALUES ('$target_file')";
+                if ($conn->query($sql) === TRUE) {
+                    echo "The file ". htmlspecialchars(basename($_FILES["photo"]["name"])). " has been uploaded.";
+                } else {
+                    echo "Error: " . $sql . "<br>" . $conn->error;
+                }
+            } else {
+                echo "Sorry, there was an error uploading your file.";
+            }
+        }
+    }
+
+    // Fetch photo data
+    $sql = "SELECT * FROM photos";
+    $result = $conn->query($sql);
+
+    $photos = [];
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $photos[] = $row;
+        }
+    }
+
+    $conn->close();
+    ?>
+
+    <div class="navbar">
+        <div class="website-title">網站名稱</div>
+        <div class="menu">
+            <a href="loginpage.html">登入</a>
+            <a href="user_information.html">個人資料</a>
+            <a href="#">會員專區</a>
+        </div>
+        <div class="search">
+            <input type="text" placeholder="請輸入關鍵字">
+            <button>Q</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <h3>店名</h3>
+            <a href="store_infomation.html">基本資料</a>
+            <a href="store_meau.html">菜單</a>
+            <a href="store_photo.html" class="active">照片</a>
+            <a href="store_reservation.html">預約</a>
+            <a href="store_website.html">網絡</a>
+        </div>
+        <div class="content">
+            <h2>上傳照片</h2>
+            <form action="store_photo.php" method="post" enctype="multipart/form-data">
+                <input type="file" name="photo" id="photo" onchange="previewImage(event)">
+                <button type="submit">上傳</button>
+            </form>
+            <div class="photo-preview" id="photo-preview">
+                <img id="preview-img" src="#" alt="Photo Preview" />
+            </div>
+            <div class="photo-sections">
+                <?php foreach ($photos as $photo): ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function(){
+                var output = document.getElementById('preview-img');
+                output.src = reader.result;
+                document.getElementById('photo-preview').style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>
