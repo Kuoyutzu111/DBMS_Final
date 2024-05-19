@@ -1,0 +1,223 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: loginpage.html');
+    exit();
+}
+
+// Establish a database connection
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "reservation_db";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch search query and filters from GET request
+$search_query = isset($_GET['keyword']) ? $_GET['keyword'] : '';
+$no_time_limit = isset($_GET['no_time_limit']) ? $_GET['no_time_limit'] : 0;
+$wifi = isset($_GET['wifi']) ? $_GET['wifi'] : 0;
+$power_outlet = isset($_GET['power_outlet']) ? $_GET['power_outlet'] : 0;
+$price = isset($_GET['price']) ? $_GET['price'] : '';
+$opening_hours = isset($_GET['opening_hours']) ? $_GET['opening_hours'] : '';
+$closing_hours = isset($_GET['closing_hours']) ? $_GET['closing_hours'] : '';
+$location = isset($_GET['location']) ? $_GET['location'] : '';
+$rating = isset($_GET['rating']) ? $_GET['rating'] : '';
+
+// Build the query based on the filters
+$query = "SELECT * FROM stores WHERE 1=1";
+
+if ($search_query) {
+    $query .= " AND (store_name LIKE '%$search_query%' OR location LIKE '%$search_query%' OR address LIKE '%$search_query%')";
+}
+
+if ($no_time_limit) {
+    $query .= " AND no_time_limit = 1";
+}
+
+if ($wifi) {
+    $query .= " AND wifi = 1";
+}
+
+if ($power_outlet) {
+    $query .= " AND power_outlet = 1";
+}
+
+if ($price) {
+    $query .= " AND price <= $price";
+}
+
+if ($opening_hours && $closing_hours) {
+    $query .= " AND opening_hours <= '$opening_hours' AND closing_hours >= '$closing_hours'";
+}
+
+if ($location && $location != '請選擇') {
+    $query .= " AND location = '$location'";
+}
+
+if ($rating) {
+    $query .= " AND rating >= $rating";
+}
+
+$result = $conn->query($query);
+
+$stores = [];
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        $stores[] = $row;
+    }
+}
+
+$conn->close();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜尋結果頁面</title>
+    <style>
+        body {
+            background-color: #FFFDD0; /* Light yellow background */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            padding: 20px;
+            background-color: #fb0505;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .website-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .menu a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar input[type="text"] {
+            padding: 5px;
+            margin-right: 5px;
+        }
+
+        .search-bar button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .grid-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .grid-item {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: calc(33.333% - 20px);
+            box-sizing: border-box;
+            padding: 10px;
+            position: relative;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: auto;
+        }
+
+        .grid-item .info {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .grid-item .info .store-name {
+            font-weight: bold;
+        }
+
+        .grid-item .info .location,
+        .grid-item .info .address {
+            color: gray;
+        }
+
+        .grid-item .heart {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            color: gray;
+        }
+
+        .grid-item .heart.filled {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="website-title">網站名稱</div>
+        <div class="menu">
+            <a href="homepage.html">首頁</a>
+            <a href="user_information.html">個人資料</a>
+            <a href="store_infomation.html">店家上傳</a>
+            <a href="logoutpage.html">登出</a>
+        </div>
+        <div class="search-bar">
+            <form action="search_resultpage.html" method="get">
+                <input type="text" name="query" placeholder="請輸入關鍵字" value="<?php echo htmlspecialchars($search_query); ?>">
+                <button type="submit">Q</button>
+            </form>
+        </div>
+    </div>
+    <div class="container">
+        <h2>搜尋結果</h2>
+        <div class="grid-container">
+            <?php if (empty($stores)): ?>
+                <p>找不到相關結果</p>
+            <?php else: ?>
+                <?php foreach ($stores as $store): ?>
+                    <div class="grid-item">
+                        <img src="<?php echo $store['photo_path']; ?>" alt="店鋪照片">
+                        <div class="heart" onclick="toggleHeart(this)">&#9829;</div>
+                        <div class="info">
+                            <div class="store-name"><?php echo $store['store_name']; ?></div>
+                            <div class="location"><?php echo $store['location']; ?></div>
+                            <div class="address"><?php echo $store['address']; ?></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <script>
+        function toggleHeart(element) {
+            element.classList.toggle('filled');
+        }
+    </script>
+</body>
+</html>

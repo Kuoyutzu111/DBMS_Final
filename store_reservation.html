@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: loginpage.html');
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -182,10 +190,10 @@
         <div class="sidebar">
             <h3>店名</h3>
             <a href="store_infomation.html">基本資料</a>
-            <a href="store_meau.html">菜單</a>
+            <a href="store_menu.html">菜單</a>
             <a href="store_photo.html">照片</a>
             <a href="store_reservation.html" class="active">預約</a>
-            <a href="store_website.html">網絡</a>
+            <a href="#">網絡</a>
         </div>
         <div class="content">
             <form>

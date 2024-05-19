@@ -192,5 +192,45 @@
             <button class="search">搜尋</button>
         </div>
     </div>
+
+    <script>
+        function clearForm() {
+            document.getElementById('keyword').value = '';
+            document.getElementById('no-time-limit').checked = false;
+            document.getElementById('wifi').checked = false;
+            document.getElementById('power-outlet').checked = false;
+            document.getElementById('price').value = '';
+            document.getElementById('opening-hours').value = '';
+            document.getElementById('closing-hours').value = '';
+            document.getElementById('location').value = '請選擇';
+            document.getElementById('rating').value = '';
+        }
+
+        function performSearch() {
+            const keyword = document.getElementById('keyword').value;
+            const noTimeLimit = document.getElementById('no-time-limit').checked ? 1 : 0;
+            const wifi = document.getElementById('wifi').checked ? 1 : 0;
+            const powerOutlet = document.getElementById('power-outlet').checked ? 1 : 0;
+            const price = document.getElementById('price').value;
+            const openingHours = document.getElementById('opening-hours').value;
+            const closingHours = document.getElementById('closing-hours').value;
+            const location = document.getElementById('location').value;
+            const rating = document.getElementById('rating').value;
+
+            const queryParams = new URLSearchParams({
+                keyword: keyword,
+                no_time_limit: noTimeLimit,
+                wifi: wifi,
+                power_outlet: powerOutlet,
+                price: price,
+                opening_hours: openingHours,
+                closing_hours: closingHours,
+                location: location,
+                rating: rating,
+            });
+
+            window.location.href = 'search_results.php?' + queryParams.toString();
+        }
+    </script>
 </body>
 </html>

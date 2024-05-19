@@ -1,3 +1,7 @@
+<?php
+session_start();
+?
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,7 +92,8 @@
             font-weight: bold;
         }
 
-        .grid-item .info .location {
+        .grid-item .info .location,
+        .grid-item .info .address {
             color: gray;
         }
 
@@ -164,6 +169,7 @@
                     <div class="info">
                         <div class="store-name"><?php echo $store['store_name']; ?></div>
                         <div class="location"><?php echo $store['location']; ?></div>
+                        <div class="address"><?php echo $store['address']; ?></div>
                     </div>
                 </div>
             <?php endforeach; ?>

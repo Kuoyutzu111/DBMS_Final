@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: loginpage.html');
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,7 +152,8 @@
         <div class="menu">
             <a href="homepage.html">首頁</a>
             <a href="user_information.html">個人資料</a>
-            <a href="#">會員專區</a>
+            <a href="store_infomation.html">店家上傳</a>
+            <a href="logoutpage.html">登出</a>    
         </div>
         <div class="search">
             <form action="searchpage.html" method="get">
