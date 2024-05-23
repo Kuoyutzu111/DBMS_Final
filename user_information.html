@@ -4,17 +4,51 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: loginpage.html');
     exit();
 }
+
+$user_id = $_SESSION['user_id'];
+
+// 连接到数据库
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "database_name";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// 获取用户信息
+$sql_user = "SELECT name, gender, phone, email FROM users WHERE id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("i", $user_id);
+$stmt_user->execute();
+$stmt_user->bind_result($name, $gender, $phone, $email);
+$stmt_user->fetch();
+$stmt_user->close();
+
+// 获取用户预设条件
+$sql_prefs = "SELECT no_time_limit, wifi, power_outlet, price_min, price_max, opening_hours, closing_hours, location, rating FROM user_preferences WHERE user_id = ?";
+$stmt_prefs = $conn->prepare($sql_prefs);
+$stmt_prefs->bind_param("i", $user_id);
+$stmt_prefs->execute();
+$stmt_prefs->bind_result($no_time_limit, $wifi, $power_outlet, $price_min, $price_max, $opening_hours, $closing_hours, $location, $rating);
+$stmt_prefs->fetch();
+$stmt_prefs->close();
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Information Settings</title>
     <style>
         body {
-            background-color: #FFFDD0; /* Light yellow background */
+            background-color: #FFFDD0; /* 浅黄色背景 */
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -78,9 +112,7 @@ if (!isset($_SESSION['user_id'])) {
             margin-bottom: 5px;
         }
 
-        .form-group input[type="text"],
-        .form-group input[type="password"],
-        .filter-group input[type="text"] {
+        .form-group input[type="text"] {
             width: 100%;
             padding: 4px;
             box-sizing: border-box;
@@ -120,27 +152,32 @@ if (!isset($_SESSION['user_id'])) {
             align-items: center;
             margin-bottom: 10px;
         }
+
         .filter-container .price-group input[type="text"],
         .filter-container .time-group input[type="text"],
-        .filter-container .location-group input[type="text"]{
+        .filter-container .location-group input[type="text"] {
             width: calc(40% - 10px);
         }
+
         .filter-container .filter-group label,
         .filter-container .price-group label,
         .filter-container .time-group label,
         .filter-container .location-group label,
         .filter-container .rating-group label {
-            min-width: 150px; 
+            min-width: 150px;
         }
+
         .rating-options {
             display: flex;
-            gap: 1px;
+            gap: 5px;
             align-items: center;
         }
-        .rating-options input[type="radio"]{
-            margin-right: 5px;
+
+        .rating-options input[type="radio"] {
+            margin-right: 3px;
         }
-        .rating-options label{
+
+        .rating-options label {
             display: flex;
             align-items: center;
         }
@@ -153,7 +190,7 @@ if (!isset($_SESSION['user_id'])) {
             <a href="homepage.html">首頁</a>
             <a href="user_information.html">個人資料</a>
             <a href="store_infomation.html">店家上傳</a>
-            <a href="logoutpage.html">登出</a>    
+            <a href="logoutpage.html">登出</a>
         </div>
         <div class="search">
             <form action="searchpage.html" method="get">
@@ -166,92 +203,85 @@ if (!isset($_SESSION['user_id'])) {
             <h2>個人資料</h2>
             <form>
                 <div class="form-group">
-                    <label for="email">電子郵件</label>
-                    <input type="text" id="email">
+                    <label for="name">姓名</label>
+                    <input type="text" id="name" value="<?php echo htmlspecialchars($name); ?>" readonly>
                 </div>
                 <div class="form-group">
-                    <label for="name">姓名</label>
-                    <input type="text" id="name">
+                    <label for="gender">性別</label>
+                    <input type="text" id="gender" value="<?php echo htmlspecialchars($gender); ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="phone">聯絡電話</label>
-                    <input type="text" id="phone">
+                    <input type="text" id="phone" value="<?php echo htmlspecialchars($phone); ?>" readonly>
                 </div>
                 <div class="form-group">
-                    <label for="password">原密碼</label>
-                    <input type="password" id="password">
-                </div>
-                <div class="form-group">
-                    <label for="new-password">新密碼</label>
-                    <input type="password" id="new-password">
-                </div>
-                <div class="button-container">
-                    <button type="submit" class="update-button">更新</button>
+                    <label for="email">電子郵件</label>
+                    <input type="text" id="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
                 </div>
             </form>
         </div>
         <div class="filter-container">
             <h2>預設篩選條件</h2>
             <div class="filter-group">
-                <input type="checkbox" id="no-time-limit">
+                <input type="checkbox" id="no-time-limit" <?php echo $no_time_limit ? 'checked' : ''; ?>>
                 <label for="no-time-limit">無用餐時間限制</label>
             </div>
             <div class="filter-group">
-                <input type="checkbox" id="wifi">
+                <input type="checkbox" id="wifi" <?php echo $wifi ? 'checked' : ''; ?>>
                 <label for="wifi">提供Wi-Fi</label>
             </div>
             <div class="filter-group">
-                <input type="checkbox" id="power-outlet">
+                <input type="checkbox" id="power-outlet" <?php echo $power_outlet ? 'checked' : ''; ?>>
                 <label for="power-outlet">提供插座</label>
             </div>
             <div class="filter-group price-group">
                 <label for="price">價錢</label>
-                <input type="text" id="price-min" placeholder="最小值">
+                <input type="text" id="price-min" value="<?php echo htmlspecialchars($price_min); ?>" placeholder="最小值">
                 <span>~</span>
-                <input type="text" id="price-max" placeholder="最大值">
+                <input type="text" id="price-max" value="<?php echo htmlspecialchars($price_max); ?>" placeholder="最大值">
                 <span>元</span>
             </div>
             <div class="filter-group time-group">
                 <label for="opening-hours">營業時間</label>
-                <input type="text" id="opening-hours">
+                <input type="text" id="opening-hours" value="<?php echo htmlspecialchars($opening_hours); ?>">
                 <span>~</span>
-                <input type="text" id="closing-hours">
+                <input type="text" id="closing-hours" value="<?php echo htmlspecialchars($closing_hours); ?>">
             </div>
-            <div class="filter-containerlocation-group">
+            <div class="filter-group location-group">
                 <label for="location">地區</label>
                 <select id="location">
-                    <option value="台北市">請選擇</option>
-                    <option value="台北市">松山區</option>
-                    <option value="台北市">信義區</option>
-                    <option value="台北市">大安區</option>
-                    <option value="台北市">中山區</option>
-                    <option value="台北市">中正區</option>
-                    <option value="台北市">大同區</option>
-                    <option value="台北市">萬華區</option>
-                    <option value="台北市">文山區</option>
-                    <option value="台北市">南港區</option>
-                    <option value="台北市">內湖區</option>
-                    <option value="台北市">士林區</option>
-                    <option value="台北市">北投區</option>
+                    <option value="">請選擇</option>
+                    <option value="松山區" <?php echo $location == '松山區' ? 'selected' : ''; ?>>松山區</option>
+                    <option value="信義區" <?php echo $location == '信義區' ? 'selected' : ''; ?>>信義區</option>
+                    <option value="大安區" <?php echo $location == '大安區' ? 'selected' : ''; ?>>大安區</option>
+                    <option value="中山區" <?php echo $location == '中山區' ? 'selected' : ''; ?>>中山區</option>
+                    <option value="中正區" <?php echo $location == '中正區' ? 'selected' : ''; ?>>中正區</option>
+                    <option value="大同區" <?php echo $location == '大同區' ? 'selected' : ''; ?>>大同區</option>
+                    <option value="萬華區" <?php echo $location == '萬華區' ? 'selected' : ''; ?>>萬華區</option>
+                    <option value="文山區" <?php echo $location == '文山區' ? 'selected' : ''; ?>>文山區</option>
+                    <option value="南港區" <?php echo $location == '南港區' ? 'selected' : ''; ?>>南港區</option>
+                    <option value="內湖區" <?php echo $location == '內湖區' ? 'selected' : ''; ?>>內湖區</option>
+                    <option value="士林區" <?php echo $location == '士林區' ? 'selected' : ''; ?>>士林區</option>
+                    <option value="北投區" <?php echo $location == '北投區' ? 'selected' : ''; ?>>北投區</option>
                 </select>
             </div>
             <div class="filter-group rating-group">
                 <label for="rating">網路評價</label>
                 <div class="rating-options">
                     <label for="rating-1">
-                        <input type="radio" id="rating-1" name="rating" value="1"> 1
+                        <input type="radio" id="rating-1" name="rating" value="1" <?php echo $rating == '1' ? 'checked' : ''; ?>>1
                     </label>
                     <label for="rating-2">
-                        <input type="radio" id="rating-2" name="rating" value="2"> 2
+                        <input type="radio" id="rating-2" name="rating" value="2" <?php echo $rating == '2' ? 'checked' : ''; ?>>2
                     </label>
                     <label for="rating-3">
-                        <input type="radio" id="rating-3" name="rating" value="3"> 3
+                        <input type="radio" id="rating-3" name="rating" value="3" <?php echo $rating == '3' ? 'checked' : ''; ?>>3
                     </label>
                     <label for="rating-4">
-                        <input type="radio" id="rating-4" name="rating" value="4"> 4
+                        <input type="radio" id="rating-4" name="rating" value="4" <?php echo $rating == '4' ? 'checked' : ''; ?>>4
                     </label>
                     <label for="rating-5">
-                        <input type="radio" id="rating-5" name="rating" value="5"> 5
+                        <input type="radio" id="rating-5" name="rating" value="5" <?php echo $rating == '5' ? 'checked' : ''; ?>>5
                     </label>
                 </div>
             </div>

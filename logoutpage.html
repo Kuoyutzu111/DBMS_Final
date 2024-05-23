@@ -1,32 +1,38 @@
 <?php
 session_start();
-$servername = "localhost";
-$username = "username";
-$password = "password";
-$dbname = "reservation_db";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $user = $_POST['username'];
-    $pass = $_POST['password'];
-
-    $sql = "SELECT id FROM users WHERE username='$user' AND password='$pass'";
-    $result = $conn->query($sql);
-
-    if ($result->num_rows > 0) {
-        $_SESSION['user_id'] = $result->fetch_assoc()['id'];
-        header('Location: homepage.html');
-    } else {
-        echo "Invalid username or password";
-    }
-}
-
-$conn->close();
+session_destroy();
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout Page</title>
+    <style>
+        body {
+            background-color: #FFFDD0; /* Light yellow background */
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .button-container a {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="message">您已成功登出</div>
+    <div class="button-container">
+        <a href="homepage.html">返回首頁</a>
+    </div>
+</body>
+</html>
