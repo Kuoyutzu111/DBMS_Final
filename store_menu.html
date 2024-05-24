@@ -4,8 +4,34 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: loginpage.html');
     exit();
 }
-?>
 
+// Establish a database connection
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "database_name";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch menu data
+$sql = "SELECT * FROM menu";
+$result = $conn->query($sql);
+
+$menu_items = [];
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        $menu_items[] = $row;
+    }
+}
+
+$conn->close();
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -97,37 +123,6 @@ if (!isset($_SESSION['user_id'])) {
             margin-top: 0;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-group label {
-            width: 100px;
-            margin-right: 10px;
-        }
-
-        .form-group input[type="text"] {
-            flex: 1;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-
-        .actions {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .actions button {
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-        }
-
         .menu-table {
             width: 100%;
             border-collapse: collapse;
@@ -143,89 +138,13 @@ if (!isset($_SESSION['user_id'])) {
         .menu-table th {
             background-color: #f2f2f2;
         }
-
-        .menu-table td button {
-            margin: 0 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-            background-color: #f44336;
-            color: white;
-            border: none;
-        }
-
-        .menu-table td button.edit {
-            background-color: #4CAF50;
-        }
-
     </style>
 </head>
 <body>
-    <?php
-    // Establish a database connection
-    $servername = "localhost";
-    $username = "username";
-    $password = "password";
-    $dbname = "reservation_db";
-
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-
-    // Handle form submission for adding and updating menu items
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        if (isset($_POST['save'])) {
-            $item_name = $_POST['item_name'];
-            $price = $_POST['price'];
-
-            if ($_POST['item_id'] == '') {
-                // Insert new item
-                $sql = "INSERT INTO menu (item_name, price) VALUES ('$item_name', '$price')";
-            } else {
-                // Update existing item
-                $item_id = $_POST['item_id'];
-                $sql = "UPDATE menu SET item_name='$item_name', price='$price' WHERE id='$item_id'";
-            }
-
-            if ($conn->query($sql) === TRUE) {
-                echo "Menu item saved successfully";
-            } else {
-                echo "Error: " . $sql . "<br>" . $conn->error;
-            }
-        } elseif (isset($_POST['delete'])) {
-            // Delete item
-            $item_id = $_POST['item_id'];
-            $sql = "DELETE FROM menu WHERE id='$item_id'";
-
-            if ($conn->query($sql) === TRUE) {
-                echo "Menu item deleted successfully";
-            } else {
-                echo "Error: " . $sql . "<br>" . $conn->error;
-            }
-        }
-    }
-
-    // Fetch menu data
-    $sql = "SELECT * FROM menu";
-    $result = $conn->query($sql);
-
-    $menu_items = [];
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            $menu_items[] = $row;
-        }
-    }
-
-    $conn->close();
-    ?>
-
     <div class="navbar">
         <div class="website-title">網站名稱</div>
         <div class="menu">
-            <a href="homepage.html">首頁</a>
+            <a href="homepage_login.html">首頁</a>
             <a href="user_information.html">個人資料</a>
             <a href="#">會員專區</a>
         </div>
@@ -245,27 +164,11 @@ if (!isset($_SESSION['user_id'])) {
         </div>
         <div class="content">
             <h2>菜單</h2>
-            <form id="menu-form" action="store_meau.html" method="post">
-                <input type="hidden" id="item_id" name="item_id">
-                <div class="form-group">
-                    <label for="item_name">品項</label>
-                    <input type="text" id="item_name" name="item_name">
-                </div>
-                <div class="form-group">
-                    <label for="price">價格</label>
-                    <input type="text" id="price" name="price">
-                </div>
-                <div class="actions">
-                    <button type="submit" name="save" class="save">儲存</button>
-                    <button type="button" class="clear" onclick="clearForm()">全部清除</button>
-                </div>
-            </form>
             <table class="menu-table">
                 <thead>
                     <tr>
                         <th>品項</th>
                         <th>價格</th>
-                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -273,32 +176,11 @@ if (!isset($_SESSION['user_id'])) {
                         <tr>
                             <td><?php echo $item['item_name']; ?></td>
                             <td><?php echo $item['price']; ?></td>
-                            <td>
-                                <button class="edit" onclick="editItem(<?php echo $item['id']; ?>, '<?php echo $item['item_name']; ?>', '<?php echo $item['price']; ?>')">編輯</button>
-                                <form action="store_menu.php" method="post" style="display:inline;">
-                                    <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
-                                    <button type="submit" name="delete">刪除</button>
-                                </form>
-                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
     </div>
-
-    <script>
-        function clearForm() {
-            document.getElementById('item_id').value = '';
-            document.getElementById('item_name').value = '';
-            document.getElementById('price').value = '';
-        }
-
-        function editItem(id, name, price) {
-            document.getElementById('item_id').value = id;
-            document.getElementById('item_name').value = name;
-            document.getElementById('price').value = price;
-        }
-    </script>
 </body>
 </html>

@@ -4,6 +4,37 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: loginpage.html');
     exit();
 }
+
+// Establish a database connection
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "database_name";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch store information based on the uploaded data
+if (isset($_GET['store_id'])) {
+    $store_id = $_GET['store_id'];
+    $sql = "SELECT * FROM store_upload_new WHERE store_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $store_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $store_info = $result->fetch_assoc();
+} else {
+    // Handle the case where store_id is not set
+    echo "Store ID is not provided.";
+    exit();
+}
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -134,44 +165,10 @@ if (!isset($_SESSION['user_id'])) {
     </style>
 </head>
 <body>
-    <?php
-    // Establish a database connection
-    $servername = "localhost";
-    $username = "username";
-    $password = "password";
-    $dbname = "reservation_db";
-
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-
-    // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save'])) {
-        $address = $_POST['address'];
-        $hours = $_POST['hours'];
-        $average_cost = $_POST['average_cost'];
-        $phone = $_POST['phone'];
-
-        $sql = "INSERT INTO store_info (address, hours, average_cost, phone) VALUES ('$address', '$hours', '$average_cost', '$phone')";
-
-        if ($conn->query($sql) === TRUE) {
-            echo "Information saved successfully";
-        } else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
-        }
-    }
-
-    $conn->close();
-    ?>
-
     <div class="navbar">
         <div class="website-title">網站名稱</div>
         <div class="menu">
-            <a href="homepage.html">首頁</a>
+            <a href="homepage_login.html">首頁</a>
             <a href="user_information.html">個人資料</a>
             <a href="#">會員專區</a>
         </div>
@@ -182,8 +179,8 @@ if (!isset($_SESSION['user_id'])) {
     </div>
     <div class="container">
         <div class="sidebar">
-            <h3>店名</h3>
-            <a href="store_information.html" class="active">基本資料</a>
+            <h3><?php echo $store_info['store_name']; ?></h3>
+            <a href="store_infomation.html" class="active">基本資料</a>
             <a href="store_menu.html">菜單</a>
             <a href="store_photo.html">照片</a>
             <a href="store_reservation.html">預約</a>
@@ -191,43 +188,26 @@ if (!isset($_SESSION['user_id'])) {
         </div>
         <div class="content">
             <h2>基本資料</h2>
-            <form action="store_information.php" method="post">
+            <form action="store_reservation.html?store_id=<?php echo $store_info['store_id']; ?>" method="post">
                 <div class="form-group">
                     <label for="address">地址</label>
-                    <input type="text" id="address" name="address">
+                    <input type="text" id="address" name="address" value="<?php echo $store_info['address']; ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="hours">營業時間</label>
-                    <select id="hours" name="hours">
-                        <option value="MON">MON 11:00-19:00</option>
-                        <option value="TUE">TUE 11:00-19:00</option>
-                        <!-- Add more options as needed -->
-                    </select>
+                    <input type="text" id="hours" name="hours" value="<?php echo $store_info['hours']; ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="average-cost">平均消費</label>
-                    <input type="text" id="average-cost" name="average_cost">
+                    <input type="text" id="average-cost" name="average_cost" value="<?php echo $store_info['average_cost']; ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="phone">電話</label>
-                    <input type="text" id="phone" name="phone">
-                </div>
-                <div class="actions">
-                    <button type="button" class="clear" onclick="clearForm()">全部清除</button>
-                    <button type="submit" name="save" class="save">儲存</button>
+                    <input type="text" id="phone" name="phone" value="<?php echo $store_info['phone']; ?>" readonly>
                 </div>
             </form>
         </div>
     </div>
-
-    <script>
-        function clearForm() {
-            document.getElementById('address').value = '';
-            document.getElementById('hours').value = '';
-            document.getElementById('average-cost').value = '';
-            document.getElementById('phone').value = '';
-        }
-    </script>
 </body>
 </html>
 

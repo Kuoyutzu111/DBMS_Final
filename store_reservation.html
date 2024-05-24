@@ -4,6 +4,37 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: loginpage.html');
     exit();
 }
+
+// Establish a database connection
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "database_name";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch store information based on the uploaded data
+if (isset($_GET['store_id'])) {
+    $store_id = $_GET['store_id'];
+    $sql = "SELECT * FROM store_upload_new WHERE store_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $store_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $store_info = $result->fetch_assoc();
+} else {
+    // Handle the case where store_id is not set
+    echo "Store ID is not provided.";
+    exit();
+}
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -96,20 +127,6 @@ if (!isset($_SESSION['user_id'])) {
             margin-top: 0;
         }
 
-        .store-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .store-info div {
-            margin-right: 10px;
-        }
-
-        .store-info div:last-child {
-            margin-right: 0;
-        }
-
         .form-group {
             margin-bottom: 20px;
             display: flex;
@@ -151,33 +168,10 @@ if (!isset($_SESSION['user_id'])) {
     </style>
 </head>
 <body>
-    <?php
-    // Establish a database connection
-    $servername = "localhost";
-    $username = "username";
-    $password = "password";
-    $dbname = "reservation_db";
-
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-
-    // Fetch reservation data
-    $sql = "SELECT * FROM reservations WHERE id = 1"; // Change the query as per your requirement
-    $result = $conn->query($sql);
-    $reservation = $result->fetch_assoc();
-
-    $conn->close();
-    ?>
-
     <div class="navbar">
         <div class="website-title">網站名稱</div>
         <div class="menu">
-            <a href="homepage.html">首頁</a>
+            <a href="homepage_login.html">首頁</a>
             <a href="user_information.html">個人資料</a>
             <a href="#">會員專區</a>
         </div>
@@ -188,57 +182,54 @@ if (!isset($_SESSION['user_id'])) {
     </div>
     <div class="container">
         <div class="sidebar">
-            <h3>店名</h3>
-            <a href="store_infomation.html">基本資料</a>
+            <h3><?php echo $store_info['store_name']; ?></h3>
+            <a href="store_infomation.html?store_id=<?php echo $store_info['store_id']; ?>">基本資料</a>
             <a href="store_menu.html">菜單</a>
             <a href="store_photo.html">照片</a>
             <a href="store_reservation.html" class="active">預約</a>
             <a href="#">網絡</a>
         </div>
         <div class="content">
-            <form>
+            <h2>預約</h2>
+            <form action="reservation_process.php" method="post">
                 <div class="form-group">
                     <label for="address">地址</label>
-                    <input type="text" id="address" value="<?php echo $reservation['address']; ?>" readonly>
+                    <input type="text" id="address" name="address" value="<?php echo $store_info['address']; ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="hours">營業時間</label>
-                    <select id="hours">
-                        <option value="MON">MON 11:00-19:00</option>
-                        <option value="TUE">TUE 11:00-19:00</option>
-                        <!-- Add more options as needed -->
-                    </select>
+                    <input type="text" id="hours" name="hours" value="<?php echo $store_info['hours']; ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="average-cost">平均消費</label>
-                    <input type="text" id="average-cost" value="<?php echo $reservation['average_cost']; ?>" readonly>
+                    <input type="text" id="average-cost" name="average_cost" value="<?php echo $store_info['average_cost']; ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="phone">電話</label>
-                    <input type="text" id="phone" value="<?php echo $reservation['phone']; ?>" readonly>
+                    <input type="text" id="phone" name="phone" value="<?php echo $store_info['phone']; ?>" readonly>
                 </div>
                 <div class="form-group">
                     <label for="reservation-date">預約日期</label>
-                    <input type="date" id="reservation-date" value="<?php echo $reservation['reservation_date']; ?>" readonly>
+                    <input type="date" id="reservation-date" name="reservation_date" required>
                 </div>
                 <div class="form-group">
                     <label for="time">時段</label>
-                    <input type="time" id="time" value="<?php echo $reservation['time']; ?>" readonly>
+                    <input type="time" id="time" name="time" required>
                 </div>
                 <div class="form-group">
                     <label for="number-of-people">人數</label>
-                    <input type="number" id="number-of-people" value="<?php echo $reservation['number_of_people']; ?>" readonly>
+                    <input type="number" id="number-of-people" name="number_of_people" required>
                 </div>
                 <div class="form-group">
                     <label for="name">訂位姓名</label>
-                    <input type="text" id="name" value="<?php echo $reservation['name']; ?>" readonly>
+                    <input type="text" id="name" name="name" required>
                 </div>
                 <div class="form-group">
                     <label for="contact-phone">聯絡電話</label>
-                    <input type="text" id="contact-phone" value="<?php echo $reservation['contact_phone']; ?>" readonly>
+                    <input type="text" id="contact-phone" name="contact_phone" required>
                 </div>
                 <div class="actions">
-                    <button type="button" class="reserve">預約</button>
+                    <button type="submit" class="reserve">預約</button>
                 </div>
             </form>
         </div>

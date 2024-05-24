@@ -162,7 +162,9 @@
         <div class="grid-container">
             <?php foreach ($stores as $store): ?>
                 <div class="grid-item">
-                    <img src="<?php echo $store['photo_path']; ?>" alt="店鋪照片">
+                    <a href="store_infomation.html?store_id=<?php echo $store['store_id']; ?>">
+                        <img src="<?php echo $store['photo_path']; ?>" alt="店鋪照片">
+                    </a>
                     <div class="heart" onclick="toggleHeart(this)">&#9829;</div>
                     <div class="info">
                         <div class="store-name"><?php echo $store['store_name']; ?></div>
@@ -172,7 +174,7 @@
                 </div>
             <?php endforeach; ?>
         </div>
-    </div>
+        
 
     <script>
         function toggleHeart(element) {
