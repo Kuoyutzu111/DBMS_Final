@@ -188,7 +188,7 @@ $conn->close();
         </div>
         <div class="search-bar">
             <form action="search_resultpage.html" method="get">
-                <input type="text" name="query" placeholder="請輸入關鍵字" value="<?php echo htmlspecialchars($search_query); ?>">
+                <input type="text" name="keyword" placeholder="請輸入關鍵字" value="<?php echo htmlspecialchars($search_query); ?>">
                 <button type="submit">Q</button>
             </form>
         </div>
@@ -201,7 +201,9 @@ $conn->close();
             <?php else: ?>
                 <?php foreach ($stores as $store): ?>
                     <div class="grid-item">
-                        <img src="<?php echo $store['photo_path']; ?>" alt="店鋪照片">
+                        <a href="store_infomation.html?store_id=<?php echo $store['store_id']; ?>">
+                            <img src="<?php echo $store['photo_path']; ?>" alt="店鋪照片">
+                        </a>
                         <div class="heart" onclick="toggleHeart(this)">&#9829;</div>
                         <div class="info">
                             <div class="store-name"><?php echo $store['store_name']; ?></div>
