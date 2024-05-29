@@ -34,7 +34,12 @@ if (!isset($_SESSION['user_id'])) {
             font-weight: bold;
         }
 
-        .menu a {
+        .menu {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu a, .menu select {
             margin: 0 10px;
             text-decoration: none;
             color: black;
@@ -149,7 +154,11 @@ if (!isset($_SESSION['user_id'])) {
         <div class="website-title">網站名稱</div>
         <div class="menu">
             <a href="logoutpage.html">登出</a>
-            <a href="user_information.html">個人資料</a>
+            <select id="userSelect" onchange="navigateToPage()">
+                <option value="" disabled selected>個人資料</option>
+                <option value="user_information.html">使用者</option>
+                <option value="store_upload_new.html">店家</option>
+            </select>
             <a href="#">會員專區</a>
             <a href="#">關於我們</a>
             <a href="#">支援</a>
@@ -170,7 +179,7 @@ if (!isset($_SESSION['user_id'])) {
         <div class="grid-container">
             <?php foreach ($stores as $store): ?>
                 <div class="grid-item">
-                    <a href="store_infomation.html?store_id=<?php echo $store['store_id']; ?>">
+                    <a href="store_information.html?store_id=<?php echo $store['store_id']; ?>">
                         <img src="<?php echo $store['photo_path']; ?>" alt="店鋪照片">
                     </a>
                     <div class="heart" onclick="toggleHeart(this)">&#9829;</div>
@@ -187,6 +196,14 @@ if (!isset($_SESSION['user_id'])) {
     <script>
         function toggleHeart(element) {
             element.classList.toggle('filled');
+        }
+
+        function navigateToPage() {
+            var select = document.getElementById("userSelect");
+            var page = select.value;
+            if (page) {
+                window.location.href = page;
+            }
         }
     </script>
 </body>

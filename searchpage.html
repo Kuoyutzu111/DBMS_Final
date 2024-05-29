@@ -63,15 +63,28 @@
             margin-bottom: 20px;
         }
 
+        .filter-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .filters {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .filter-group {
-            text-align: left;
-            width: 45%;
+            display: flex;
+            justify-content: space-between;
+            flex: 1 1 100%;
+            margin-bottom: 10px;
         }
 
         .filter-group label {
@@ -84,13 +97,20 @@
             margin-right: 10px;
         }
 
+        .price-time-location-rating {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
         .price-group,
         .time-group,
         .location-group,
         .rating-group {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 7px;
+            flex: 1 1 calc(50% - 5px);
         }
 
         .price-group input[type="text"],
@@ -98,7 +118,7 @@
         .location-group select,
         .rating-group input[type="text"] {
             width: calc(50% - 10px);
-            padding: 5px;
+            padding: 1px;
             margin: 0 5px;
         }
 
@@ -119,7 +139,59 @@
         .actions button.clear {
             background-color: #f44336;
         }
-        </style>
+
+        .results {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .grid-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .grid-item {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: calc(33.333% - 20px);
+            box-sizing: border-box;
+            padding: 10px;
+            position: relative;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: auto;
+        }
+
+        .grid-item .info {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .grid-item .info .store-name {
+            font-weight: bold;
+        }
+
+        .grid-item .info .location,
+        .grid-item .info .address {
+            color: gray;
+        }
+
+        .grid-item .heart {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            color: gray;
+        }
+
+        .grid-item .heart.filled {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <div class="navbar">
@@ -135,55 +207,57 @@
             <label for="keyword">關鍵字輸入</label>
             <input type="text" id="keyword" placeholder="請輸入關鍵字">
         </div>
-        <div class="filters">
-            <div class="filter-group">
-                <label>
-                    <input type="checkbox" id="no-time-limit">
-                    無用餐時間限制
-                </label>
-                <label>
-                    <input type="checkbox" id="wifi">
-                    提供Wi-Fi
-                </label>
-                <label>
-                    <input type="checkbox" id="power-outlet">
-                    提供插座
-                </label>
-            </div>
-            <div class="filter-group">
-                <div class="price-group">
-                    <label for="price">價錢</label>
-                    <input type="text" id="price" placeholder="300">
-                    <span>元以下</span>
+        <div class="filter-container">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>
+                        <input type="checkbox" id="no-time-limit">
+                        無用餐時間限制
+                    </label>
+                    <label>
+                        <input type="checkbox" id="wifi">
+                        提供Wi-Fi
+                    </label>
+                    <label>
+                        <input type="checkbox" id="power-outlet">
+                        提供插座
+                    </label>
                 </div>
-                <div class="time-group">
-                    <label for="opening-hours">營業時間</label>
-                    <input type="text" id="opening-hours" placeholder="10:00">
-                    <span>~</span>
-                    <input type="text" id="closing-hours" placeholder="21:00">
-                </div>
-                <div class="location-group">
-                    <label for="location">地區</label>
-                    <select id="location">
-                        <option value="請選擇">請選擇</option>
-                        <option value="松山區">松山區</option>
-                        <option value="信義區">信義區</option>
-                        <option value="大安區">大安區</option>
-                        <option value="中山區">中山區</option>
-                        <option value="中正區">中正區</option>
-                        <option value="大同區">大同區</option>
-                        <option value="萬華區">萬華區</option>
-                        <option value="文山區">文山區</option>
-                        <option value="南港區">南港區</option>
-                        <option value="內湖區">內湖區</option>
-                        <option value="士林區">士林區</option>
-                        <option value="北投區">北投區</option>
-                    </select>
-                </div>
-                <div class="rating-group">
-                    <label for="rating">網路評價</label>
-                    <input type="text" id="rating" placeholder="3.5">
-                    <span>分以上</span>
+                <div class="price-time-location-rating">
+                    <div class="price-group">
+                        <label for="price">價錢</label>
+                        <input type="text" id="price" placeholder="300">
+                        <span>元以下</span>
+                    </div>
+                    <div class="time-group">
+                        <label for="opening-hours">營業時間</label>
+                        <input type="text" id="opening-hours" placeholder="10:00">
+                        <span>~</span>
+                        <input type="text" id="closing-hours" placeholder="21:00">
+                    </div>
+                    <div class="location-group">
+                        <label for="location">地區</label>
+                        <select id="location">
+                            <option value="請選擇">請選擇</option>
+                            <option value="松山區">松山區</option>
+                            <option value="信義區">信義區</option>
+                            <option value="大安區">大安區</option>
+                            <option value="中山區">中山區</option>
+                            <option value="中正區">中正區</option>
+                            <option value="大同區">大同區</option>
+                            <option value="萬華區">萬華區</option>
+                            <option value="文山區">文山區</option>
+                            <option value="南港區">南港區</option>
+                            <option value="內湖區">內湖區</option>
+                            <option value="士林區">士林區</option>
+                            <option value="北投區">北投區</option>
+                        </select>
+                    </div>
+                    <div class="rating-group">
+                        <label for="rating">網路評價</label>
+                        <input type="text" id="rating" placeholder="3.5">
+                        <span>分以上</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -191,6 +265,7 @@
             <button class="clear" onclick="clearForm()">全部清除</button>
             <button class="search" onclick="performSearch()">搜尋</button>
         </div>
+        <div id="results" class="results"></div>
     </div>
 
     <script>
@@ -229,7 +304,18 @@
                 rating: rating,
             });
 
-            window.location.href = 'search_resultpage.html?' + queryParams.toString();
+            fetch('search_resultpage.html?' + queryParams.toString())
+                .then(response => response.text())
+                .then(data => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data, 'text/html');
+                    const results = doc.querySelector('.grid-container');
+                    document.getElementById('results').innerHTML = results ? results.outerHTML : '<p>找不到相關結果</p>';
+                });
+        }
+
+        function toggleHeart(element) {
+            element.classList.toggle('filled');
         }
     </script>
 </body>

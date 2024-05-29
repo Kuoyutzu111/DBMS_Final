@@ -1,87 +1,9 @@
-<?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: loginpage.html');
-    exit();
-}
-
-// Establish a database connection
-$servername = "localhost";
-$username = "username";
-$password = "password";
-$dbname = "reservation_db";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Fetch search query and filters from GET request
-$search_query = isset($_GET['keyword']) ? $_GET['keyword'] : '';
-$no_time_limit = isset($_GET['no_time_limit']) ? $_GET['no_time_limit'] : 0;
-$wifi = isset($_GET['wifi']) ? $_GET['wifi'] : 0;
-$power_outlet = isset($_GET['power_outlet']) ? $_GET['power_outlet'] : 0;
-$price = isset($_GET['price']) ? $_GET['price'] : '';
-$opening_hours = isset($_GET['opening_hours']) ? $_GET['opening_hours'] : '';
-$closing_hours = isset($_GET['closing_hours']) ? $_GET['closing_hours'] : '';
-$location = isset($_GET['location']) ? $_GET['location'] : '';
-$rating = isset($_GET['rating']) ? $_GET['rating'] : '';
-
-// Build the query based on the filters
-$query = "SELECT * FROM stores WHERE 1=1";
-
-if ($search_query) {
-    $query .= " AND (store_name LIKE '%$search_query%' OR location LIKE '%$search_query%' OR address LIKE '%$search_query%')";
-}
-
-if ($no_time_limit) {
-    $query .= " AND no_time_limit = 1";
-}
-
-if ($wifi) {
-    $query .= " AND wifi = 1";
-}
-
-if ($power_outlet) {
-    $query .= " AND power_outlet = 1";
-}
-
-if ($price) {
-    $query .= " AND price <= $price";
-}
-
-if ($opening_hours && $closing_hours) {
-    $query .= " AND opening_hours <= '$opening_hours' AND closing_hours >= '$closing_hours'";
-}
-
-if ($location && $location != '請選擇') {
-    $query .= " AND location = '$location'";
-}
-
-if ($rating) {
-    $query .= " AND rating >= $rating";
-}
-
-$result = $conn->query($query);
-
-$stores = [];
-if ($result->num_rows > 0) {
-    while($row = $result->fetch_assoc()) {
-        $stores[] = $row;
-    }
-}
-
-$conn->close();
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>搜尋結果頁面</title>
+    <title>Search Page</title>
     <style>
         body {
             background-color: #FFFDD0; /* Light yellow background */
@@ -94,14 +16,16 @@ $conn->close();
             padding: 20px;
             background-color: #fb0505;
             text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .website-title {
             font-size: 24px;
             font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .menu {
+            display: inline-block;
         }
 
         .menu a {
@@ -110,23 +34,95 @@ $conn->close();
             color: black;
         }
 
-        .search-bar {
-            display: flex;
-            align-items: center;
+        .search {
+            margin-top: 10px;
         }
 
-        .search-bar input[type="text"] {
+        .search input[type="text"] {
             padding: 5px;
             margin-right: 5px;
         }
 
-        .search-bar button {
+        .search button {
             padding: 5px 10px;
             cursor: pointer;
         }
 
         .container {
             padding: 20px;
+            text-align: center;
+        }
+
+        .keyword-input {
+            margin-bottom: 20px;
+        }
+
+        .keyword-input input[type="text"] {
+            width: 60%;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            text-align: left;
+            width: 45%;
+        }
+
+        .filter-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .filter-group label input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .price-group,
+        .time-group,
+        .location-group,
+        .rating-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .price-group input[type="text"],
+        .time-group input[type="text"],
+        .location-group select,
+        .rating-group input[type="text"] {
+            width: calc(50% - 10px);
+            padding: 5px;
+            margin: 0 5px;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .actions button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+
+        .actions button.clear {
+            background-color: #f44336;
+        }
+
+        .results {
+            margin-top: 20px;
+            text-align: left;
         }
 
         .grid-container {
@@ -183,40 +179,119 @@ $conn->close();
         <div class="menu">
             <a href="homepage.html">首頁</a>
             <a href="user_information.html">個人資料</a>
-            <a href="store_infomation.html">店家上傳</a>
-            <a href="logoutpage.html">登出</a>
-        </div>
-        <div class="search-bar">
-            <form action="search_resultpage.html" method="get">
-                <input type="text" name="keyword" placeholder="請輸入關鍵字" value="<?php echo htmlspecialchars($search_query); ?>">
-                <button type="submit">Q</button>
-            </form>
+            <a href="#">會員專區</a>
         </div>
     </div>
     <div class="container">
-        <h2>搜尋結果</h2>
-        <div class="grid-container">
-            <?php if (empty($stores)): ?>
-                <p>找不到相關結果</p>
-            <?php else: ?>
-                <?php foreach ($stores as $store): ?>
-                    <div class="grid-item">
-                        <a href="store_infomation.html?store_id=<?php echo $store['store_id']; ?>">
-                            <img src="<?php echo $store['photo_path']; ?>" alt="店鋪照片">
-                        </a>
-                        <div class="heart" onclick="toggleHeart(this)">&#9829;</div>
-                        <div class="info">
-                            <div class="store-name"><?php echo $store['store_name']; ?></div>
-                            <div class="location"><?php echo $store['location']; ?></div>
-                            <div class="address"><?php echo $store['address']; ?></div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+        <div class="keyword-input">
+            <label for="keyword">關鍵字輸入</label>
+            <input type="text" id="keyword" placeholder="請輸入關鍵字">
         </div>
+        <div class="filters">
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="no-time-limit">
+                    無用餐時間限制
+                </label>
+                <label>
+                    <input type="checkbox" id="wifi">
+                    提供Wi-Fi
+                </label>
+                <label>
+                    <input type="checkbox" id="power-outlet">
+                    提供插座
+                </label>
+            </div>
+            <div class="filter-group">
+                <div class="price-group">
+                    <label for="price">價錢</label>
+                    <input type="text" id="price" placeholder="300">
+                    <span>元以下</span>
+                </div>
+                <div class="time-group">
+                    <label for="opening-hours">營業時間</label>
+                    <input type="text" id="opening-hours" placeholder="10:00">
+                    <span>~</span>
+                    <input type="text" id="closing-hours" placeholder="21:00">
+                </div>
+                <div class="location-group">
+                    <label for="location">地區</label>
+                    <select id="location">
+                        <option value="請選擇">請選擇</option>
+                        <option value="松山區">松山區</option>
+                        <option value="信義區">信義區</option>
+                        <option value="大安區">大安區</option>
+                        <option value="中山區">中山區</option>
+                        <option value="中正區">中正區</option>
+                        <option value="大同區">大同區</option>
+                        <option value="萬華區">萬華區</option>
+                        <option value="文山區">文山區</option>
+                        <option value="南港區">南港區</option>
+                        <option value="內湖區">內湖區</option>
+                        <option value="士林區">士林區</option>
+                        <option value="北投區">北投區</option>
+                    </select>
+                </div>
+                <div class="rating-group">
+                    <label for="rating">網路評價</label>
+                    <input type="text" id="rating" placeholder="3.5">
+                    <span>分以上</span>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="clear" onclick="clearForm()">全部清除</button>
+            <button class="search" onclick="performSearch()">搜尋</button>
+        </div>
+        <div id="results" class="results"></div>
     </div>
 
     <script>
+        function clearForm() {
+            document.getElementById('keyword').value = '';
+            document.getElementById('no-time-limit').checked = false;
+            document.getElementById('wifi').checked = false;
+            document.getElementById('power-outlet').checked = false;
+            document.getElementById('price').value = '';
+            document.getElementById('opening-hours').value = '';
+            document.getElementById('closing-hours').value = '';
+            document.getElementById('location').value = '請選擇';
+            document.getElementById('rating').value = '';
+        }
+
+        function performSearch() {
+            const keyword = document.getElementById('keyword').value;
+            const noTimeLimit = document.getElementById('no-time-limit').checked ? 1 : 0;
+            const wifi = document.getElementById('wifi').checked ? 1 : 0;
+            const powerOutlet = document.getElementById('power-outlet').checked ? 1 : 0;
+            const price = document.getElementById('price').value;
+            const openingHours = document.getElementById('opening-hours').value;
+            const closingHours = document.getElementById('closing-hours').value;
+            const location = document.getElementById('location').value;
+            const rating = document.getElementById('rating').value;
+
+            const queryParams = new URLSearchParams({
+                keyword: keyword,
+                no_time_limit: noTimeLimit,
+                wifi: wifi,
+                power_outlet: powerOutlet,
+                price: price,
+                opening_hours: openingHours,
+                closing_hours: closingHours,
+                location: location,
+                rating: rating,
+            });
+
+            fetch('search_resultpage.html?' + queryParams.toString())
+                .then(response => response.text())
+                .then(data => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data, 'text/html');
+                    const results = doc.querySelector('.grid-container');
+                    document.getElementById('results').innerHTML = results ? results.outerHTML : '<p>找不到相關結果</p>';
+                });
+        }
+
         function toggleHeart(element) {
             element.classList.toggle('filled');
         }
